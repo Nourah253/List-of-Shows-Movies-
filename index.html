@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Now Screening — My Watchlist</title>
+<meta name="description" content="A running log of what I'm watching — movies and TV shows.">
+<meta property="og:title" content="Now Screening — My Watchlist">
+<meta property="og:description" content="A running log of what I'm watching — movies and TV shows.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14131c;
+    --bg-alt: #1b1a26;
+    --card: #201f2c;
+    --amber: #f0a93a;
+    --amber-dim: #b8822a;
+    --teal: #3f7d78;
+    --plum: #8a6a92;
+    --cream: #efe9dc;
+    --cream-dim: #a8a297;
+    --line: #35333f;
+    --red: #d1553f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--cream);
+    font-family:'Inter',sans-serif;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(240,169,58,0.05), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(63,125,120,0.06), transparent 40%);
+  }
+
+  /* Marquee header */
+  header{
+    text-align:center;
+    padding:64px 20px 40px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  header::before, header::after{
+    content:'';
+    position:absolute;
+    top:24px;
+    left:50%;
+    width:520px;
+    max-width:88%;
+    height:1px;
+    background:repeating-linear-gradient(90deg, var(--amber-dim) 0 6px, transparent 6px 14px);
+    transform:translateX(-50%);
+  }
+  header::after{ top:auto; bottom:24px; }
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:clamp(38px, 7vw, 68px);
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin:0;
+    color:var(--amber);
+    text-shadow:0 0 24px rgba(240,169,58,0.25);
+  }
+  .tagline{
+    font-family:'Oswald',sans-serif;
+    letter-spacing:5px;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--cream-dim);
+    margin-top:10px;
+  }
+
+  /* Controls */
+  .controls{
+    max-width:1000px;
+    margin:36px auto 0;
+    padding:0 20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tab{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-size:13px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--cream-dim);
+    padding:8px 16px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:border-color .15s, color .15s;
+  }
+  .tab:hover{ border-color:var(--amber-dim); color:var(--cream); }
+  .tab.active{ border-color:var(--amber); color:var(--amber); }
+
+  #search{
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    color:var(--cream);
+    padding:9px 14px;
+    border-radius:2px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    min-width:200px;
+  }
+  #search:focus{ outline:none; border-color:var(--amber-dim); }
+  #search::placeholder{ color:var(--cream-dim); }
+
+  .count{
+    max-width:1000px;
+    margin:18px auto 0;
+    padding:0 22px;
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--cream-dim);
+  }
+
+  /* Grid */
+  #grid{
+    max-width:1000px;
+    margin:20px auto 80px;
+    padding:0 20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+    gap:22px;
+  }
+
+  /* Ticket card */
+  .ticket{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:6px;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    overflow:visible;
+  }
+  .ticket-top{
+    padding:18px 18px 16px;
+    flex:1;
+  }
+  .kind{
+    display:inline-block;
+    font-family:'Oswald',sans-serif;
+    font-size:10px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:2px;
+    margin-bottom:10px;
+  }
+  .kind.movie{ background:rgba(240,169,58,0.15); color:var(--amber); }
+  .kind.tv{ background:rgba(138,106,146,0.2); color:var(--plum); }
+
+  .ticket h3{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:20px;
+    margin:0 0 6px;
+    line-height:1.2;
+    color:var(--cream);
+  }
+  .meta{
+    font-size:12px;
+    color:var(--cream-dim);
+    letter-spacing:.5px;
+  }
+  .genre{
+    margin-top:10px;
+    font-size:12px;
+    color:var(--teal);
+  }
+
+  /* perforation divider */
+  .perf{
+    position:relative;
+    height:0;
+    border-top:1px dashed var(--line);
+    margin:0 0;
+  }
+  .perf::before, .perf::after{
+    content:'';
+    position:absolute;
+    top:-9px;
+    width:18px;
+    height:18px;
+    background:var(--bg);
+    border-radius:50%;
+  }
+  .perf::before{ left:-9px; }
+  .perf::after{ right:-9px; }
+
+  .ticket-bottom{
+    padding:14px 18px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .stub-label{
+    font-family:'Oswald',sans-serif;
+    font-size:10px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--cream-dim);
+  }
+  .status-btn{
+    font-family:'Oswald',sans-serif;
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:7px 14px;
+    border-radius:2px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--cream-dim);
+    cursor:pointer;
+    transition:.15s;
+  }
+  .status-btn.watched{
+    border-color:var(--teal);
+    color:var(--teal);
+  }
+  .status-btn:hover{ border-color:var(--amber); color:var(--amber); }
+
+  .empty{
+    grid-column:1/-1;
+    text-align:center;
+    padding:60px 20px;
+    color:var(--cream-dim);
+    font-family:'Oswald',sans-serif;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    font-size:13px;
+  }
+
+  footer{
+    text-align:center;
+    padding:30px 20px 50px;
+    font-size:12px;
+    color:var(--cream-dim);
+    border-top:1px solid var(--line);
+  }
+  footer code{
+    background:var(--bg-alt);
+    padding:2px 6px;
+    border-radius:3px;
+    color:var(--amber);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Now Screening</h1>
+  <div class="tagline">A running log of what I'm watching</div>
+</header>
+
+<div class="controls">
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-filter="all">All</button>
+    <button class="tab" data-filter="movie">Movies</button>
+    <button class="tab" data-filter="tv">TV shows</button>
+    <button class="tab" data-filter="watched">Watched</button>
+    <button class="tab" data-filter="towatch">To watch</button>
+  </div>
+  <input type="text" id="search" placeholder="Search titles...">
+</div>
+
+<div class="count" id="count"></div>
+<div id="grid"></div>
+
+<footer>
+  Edit the <code>titles</code> list at the top of the script to add your own shows and movies.
+</footer>
+
+<script>
+  // ---- Your list lives here. Add, remove, or edit entries freely. ----
+  const titles = [
+    { title: "The Shards", kind: "tv", year: 2026, genre: "", watched: true },
+    { title: "Sterling Point", kind: "tv", year: 2026, genre: "", watched: true },
+    { title: "Severance", kind: "tv", year: "", genre: "", watched: true },
+    { title: "The O.C.", kind: "tv", year: "", genre: "", watched: true },
+    { title: "Not Suitable for Work", kind: "tv", year: "", genre: "", watched: true },
+    { title: "Widows Bay", kind: "tv", year: "", genre: "", watched: true },
+    { title: "I Will Find You", kind: "tv", year: "", genre: "", watched: true },
+    { title: "Yellowjackets", kind: "tv", year: "", genre: "", watched: true },
+    { title: "Elle", kind: "tv", year: 2026, genre: "", watched: true },
+    { title: "Ted Lasso", kind: "tv", year: "", genre: "", watched: false },
+    { title: "Lucky", kind: "tv", year: "", genre: "", watched: false },
+    { title: "The Gentlemen", kind: "tv", year: "", genre: "", watched: true },
+    { title: "Arcane: League of Legends", kind: "tv", year: "", genre: "", watched: true },
+    { title: "Dexter", kind: "tv", year: "", genre: "", watched: true },
+    { title: "We Were Liars", kind: "tv", year: "", genre: "", watched: true },
+    { title: "X-Men '97", kind: "tv", year: "", genre: "", watched: true },
+    { title: "Adults", kind: "tv", year: "", genre: "", watched: true },
+    { title: "Spider-Man: Brand New Day", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Obsession", kind: "movie", year: "", genre: "", watched: false },
+    { title: "The Invite", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Disclosure Day", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Hit Me Hard and Soft", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Tuner", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Your Fault: London", kind: "movie", year: "", genre: "", watched: false },
+    { title: "My Fault: London", kind: "movie", year: "", genre: "", watched: false },
+    { title: "The Sheep Detectives", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Project Hail Mary", kind: "movie", year: "", genre: "", watched: false },
+    { title: "The Drama", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Send Help", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Pretty Lethal", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Eternity", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Oh. What. Fun.", kind: "movie", year: "", genre: "", watched: false },
+    { title: "The Roses", kind: "movie", year: "", genre: "", watched: false },
+    { title: "The Long Walk", kind: "movie", year: "", genre: "", watched: false },
+    { title: "The Map That Leads to You", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Superman", kind: "movie", year: 2025, genre: "", watched: false },
+    { title: "Drop", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Death of a Unicorn", kind: "movie", year: "", genre: "", watched: false },
+    { title: "Companion", kind: "movie", year: "", genre: "", watched: false },
+  ];
+
+  let activeFilter = "all";
+  let searchTerm = "";
+
+  const grid = document.getElementById("grid");
+  const countEl = document.getElementById("count");
+  const tabs = document.querySelectorAll(".tab");
+  const search = document.getElementById("search");
+
+  function matchesFilter(item) {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "movie") return item.kind === "movie";
+    if (activeFilter === "tv") return item.kind === "tv";
+    if (activeFilter === "watched") return item.watched;
+    if (activeFilter === "towatch") return !item.watched;
+    return true;
+  }
+
+  function render() {
+    const term = searchTerm.trim().toLowerCase();
+    const visible = titles.filter(
+      (item) => matchesFilter(item) && item.title.toLowerCase().includes(term)
+    );
+
+    countEl.textContent = `${visible.length} title${visible.length === 1 ? "" : "s"}`;
+
+    if (visible.length === 0) {
+      grid.innerHTML = `<div class="empty">No titles match.</div>`;
+      return;
+    }
+
+    grid.innerHTML = visible
+      .map((item, i) => {
+        const realIndex = titles.indexOf(item);
+        return `
+        <div class="ticket">
+          <div class="ticket-top">
+            <span class="kind ${item.kind}">${item.kind === "movie" ? "Movie" : "TV show"}</span>
+            <h3>${item.title}</h3>
+            ${item.year ? `<div class="meta">${item.year}</div>` : ""}
+            ${item.genre ? `<div class="genre">${item.genre}</div>` : ""}
+          </div>
+          <div class="perf"></div>
+          <div class="ticket-bottom">
+            <span class="stub-label">Admit one</span>
+            <button class="status-btn ${item.watched ? "watched" : ""}" data-index="${realIndex}">
+              ${item.watched ? "Watched" : "To watch"}
+            </button>
+          </div>
+        </div>`;
+      })
+      .join("");
+
+    grid.querySelectorAll(".status-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.dataset.index);
+        titles[idx].watched = !titles[idx].watched;
+        render();
+      });
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      activeFilter = tab.dataset.filter;
+      render();
+    });
+  });
+
+  search.addEventListener("input", (e) => {
+    searchTerm = e.target.value;
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
